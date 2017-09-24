@@ -1,15 +1,14 @@
 #!/bin/bash
 # run like this:
 # curl -sO https://raw.githubusercontent.com/renatofrota/letmein/master/letmein.bash && bash letmein.bash
-echo -e "\n\tletmein - v0.0.2 - https://github.com/renatofrota/letmein\n";
+echo -e "\n\tletmein - v0.0.3 - https://github.com/renatofrota/letmein\n";
 initialdir=$(pwd);
 hostname=$(hostname);
-unset lmikeep;
 unset lmipause;
+lmifiles=();
 wps=$(find $(pwd) -type f -name wp-blog-header.php 2>/dev/null | wc -l);
-[[ "$wps" -ge 2 ]] && read -${BASH_VERSION+e}rp "$wps installations found. Pause (and remove) after each one? 1/0: " lmipause;
+[[ "$wps" -ge 2 ]] && read -${BASH_VERSION+e}rp "$wps installations found. Pause (and remove) after generating links for each one? 1/0: " lmipause;
 [[ "$wps" == 0 ]] && echo "WP core dir not found. Try running from the directory wp-blog-header.php is located." || {
-	[[ "$wps" -gt "1" ]] && lmikeep=1 ;
 	for dirname in $(find $(pwd) -type f -name wp-blog-header.php 2>/dev/null | xargs -I % dirname %); do
 		lmistep=0;
 		unset lmi;
@@ -43,6 +42,7 @@ wps=$(find $(pwd) -type f -name wp-blog-header.php 2>/dev/null | wc -l);
 			\n\twp_safe_redirect( $redirect_to );
 			\n\n\texit();
 			\n}' | sed "s,LMIKEY,$lmikey," > $letmein.php;
+            lmifiles+=("$dirname/$letmein.php");
 			echo -e "\nMagic links to login on WP installed at $dirname as $un\n\nRegular: $url/$letmein.php?key=$lmikey&id=$id\nSkipDNS: $url2/$letmein.php?key=$lmikey&id=$id\n";
 			cd $initialdir;
 			[[ "$lmipause" == "1" ]] && read -${BASH_VERSION+e}rsp "Press any key to continue..." -n 1 pause && rm -fv $dirname/$letmein.php || {
@@ -52,9 +52,15 @@ wps=$(find $(pwd) -type f -name wp-blog-header.php 2>/dev/null | wc -l);
 			[[ "$lmistep" != "1" ]] && echo "'wp option list --search=siteurl --field=option_value --skip-plugins --skip-themes' failed. is all fine with this WP install? ($(pwd))";
 		};
 	done;
+    [[ "$wps" -ge 2 ]] && [[ "$lmipause" != "1" ]] && read -${BASH_VERSION+e}rp "Remove all generated magic links? 1/0: " lmikill;
+    [[ "$lmikill" == "1" ]] && {
+        for lmifile in ${lmifiles[@]}; do
+            rm -fv "$lmifile";
+        done;
+    };
+    cd $initialdir;
 };
-cd $initialdir;
-function killme {
+killme() {
     rm -- "$0";
 }
 trap killme EXIT
