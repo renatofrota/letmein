@@ -1,6 +1,7 @@
 #!/bin/bash
-# curl -s https://raw.githubusercontent.com/renatofrota/letmein/master/letmein.bash | bash
-echo -e "\n\tletmein - v0.0.1 - https://github.com/renatofrota/letmein\n";
+# run like this:
+# curl -sO https://raw.githubusercontent.com/renatofrota/letmein/master/letmein.bash && bash letmein.bash
+echo -e "\n\tletmein - v0.0.2 - https://github.com/renatofrota/letmein\n";
 initialdir=$(pwd);
 hostname=$(hostname);
 unset lmikeep;
