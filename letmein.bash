@@ -1,7 +1,7 @@
 #!/bin/bash
 # run like this:
 # curl -sO https://raw.githubusercontent.com/renatofrota/letmein/master/letmein.bash && bash letmein.bash
-echo -e "\n\tletmein - v0.0.3 - https://github.com/renatofrota/letmein\n";
+echo -e "\n\tletmein - v0.0.4 - https://github.com/renatofrota/letmein\n";
 initialdir=$(pwd);
 hostname=$(hostname);
 unset lmipause;
@@ -61,6 +61,6 @@ wps=$(find $(pwd) -type f -name wp-blog-header.php 2>/dev/null | wc -l);
     cd $initialdir;
 };
 killme() {
-    rm -- "$0";
+    [[ "$0" == "letmein.bash" ]] && echo -n "Self destroying... " && sleep 1 && rm -fv "$0" || echo "It's all done. Do not forget to remove this script.";
 }
 trap killme EXIT
