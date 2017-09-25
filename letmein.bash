@@ -1,7 +1,7 @@
 #!/bin/bash
 # run like this:
 # curl -sO https://raw.githubusercontent.com/renatofrota/letmein/master/letmein.bash && bash letmein.bash
-echo -e "\n\tletmein - v0.0.4 - https://github.com/renatofrota/letmein\n";
+echo -e "\n\tletmein - v0.0.5 - https://github.com/renatofrota/letmein\n";
 initialdir=$(pwd);
 hostname=$(hostname);
 unset lmipause;
@@ -9,7 +9,7 @@ lmifiles=();
 wps=$(find $(pwd) -type f -name wp-blog-header.php 2>/dev/null | wc -l);
 [[ "$wps" -ge 2 ]] && read -${BASH_VERSION+e}rp "$wps installations found. Pause (and remove) after generating links for each one? 1/0: " lmipause;
 [[ "$wps" == 0 ]] && echo "WP core dir not found. Try running from the directory wp-blog-header.php is located." || {
-	for dirname in $(find $(pwd) -type f -name wp-blog-header.php 2>/dev/null | xargs -I % dirname %); do
+	for dirname in $(find $(pwd) -type f -name wp-blog-header.php 2>/dev/null -print | perl -n -e '$x = $_; $x =~ tr%/%%cd; print length($x), " $_";' | sort -k 1n -k 2 | sed 's/^[0-9][0-9]* //' | xargs -I % dirname %); do
 		lmistep=0;
 		unset lmi;
 		cd $dirname;
