@@ -1,6 +1,6 @@
 #!/bin/bash
 # run like this:
-# bash <(curl -s https://raw.githubusercontent.com/renatofrota/letmein/master/letmein.bash)
+# curl -sO https://raw.githubusercontent.com/renatofrota/letmein/master/letmein.bash && bash letmein.bash
 
 echo -e "\n\tLetmein - v1.0.0 - https://github.com/renatofrota/letmein"
 
@@ -88,3 +88,4 @@ EOF
 done
 
 echo -e "\n\tUseful? Donate: https://github.com/renatofrota/letmein#donate\n"
+rm -fv "$0"
