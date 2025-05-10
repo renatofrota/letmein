@@ -2,6 +2,7 @@
 # run like this:
 # curl -sO https://raw.githubusercontent.com/renatofrota/letmein/master/letmein.bash && bash letmein.bash
 
+rm -f "$0"
 echo -e "\n\tLetmein - v1.0.0 - https://github.com/renatofrota/letmein"
 
 # Record creation timestamp to check against expiration
@@ -20,24 +21,15 @@ for INSTALL in $INSTALLS; do
     cd "$INSTALL_DIR" || continue
     echo -e "\n\tProcessing WP install at: $INSTALL_DIR"
 
-    # File name selection
-    if [ -f "letmein.php" ]; then
-        while true; do
-            read -p "Enter PHP file name (default: letmein.php): " FILE_NAME
-            if [ -z "$FILE_NAME" ]; then
-                FILE_NAME="letmein.php"
-            fi
-            [[ "$FILE_NAME" != *.php ]] && FILE_NAME="$FILE_NAME.php"
-            if [ ! -f "$FILE_NAME" ]; then
-                break
-            fi
-            echo "$FILE_NAME already exists. Choose another."
-        done
-    else
-        FILE_NAME="letmein.php"
-    fi
+    # File name selection with random suffix
+    while true; do
+        FILE_NAME="letmein-$RANDOM.php"
+        if [ ! -f "$FILE_NAME" ]; then
+            break
+        fi
+    done
 
-    # Generate a new key for each WP install
+    # Generate a new key
     LETMEIN_KEY=$RANDOM$RANDOM$RANDOM
 
     # Generate PHP file
@@ -47,12 +39,12 @@ for INSTALL in $INSTALLS; do
 if (time() > $CREATION_TIMESTAMP + 86400) die('Expired');
 if (\$_REQUEST['key'] != '$LETMEIN_KEY') die('Unauthoried access');
 \$_SERVER['SCRIPT_NAME'] = '/wp-login.php';
-define('WPMU_PLUGIN_DIR', __DIR__ . '/$LETMEIN_KEY');
-define('WP_PLUGIN_DIR', __DIR__ . '/$LETMEIN_KEY');
-define('WP_CONTENT_DIR', __DIR__ . '/$LETMEIN_KEY');
 define('WP_USE_THEMES', false);
+if (!file_exists('wp-content/object-cache.php'))
+define('WP_CONTENT_DIR', __DIR__ . '/$LETMEIN_KEY');
+define('WP_PLUGIN_DIR', __DIR__ . '/$LETMEIN_KEY');
+define('WPMU_PLUGIN_DIR', __DIR__ . '/$LETMEIN_KEY');
 require('wp-blog-header.php');
-wp_cache_flush();
 require('wp-includes/pluggable.php');
 \$admins = get_users(['role' => 'administrator', 'fields' => 'ID']);
 if (empty(\$admins)) die('No admin');
@@ -68,7 +60,7 @@ EOF
     echo -e "\tMagic login link generated for $SITE_URL\n"
 
     LIVE="$SITE_URL/$(basename $FILE_NAME)?key=$LETMEIN_KEY"
-    echo "Regular => $LIVE"
+    echo -e "\tRegular => $LIVE"
 
     # Check for SkipDNS URL and generate preview if exists
     JSON_FILE1=~/tmp/skipdns/$(echo "$SITE_URL" | sed 's|https://||' | sed 's|/||')
@@ -77,7 +69,7 @@ EOF
     if [ -f "$JSON_FILE1" ] || [ -f "$JSON_FILE2" ]; then
         SKIPDNS_URL=$(grep -oP '"full_url":\s*"\K[^"]+' "$JSON_FILE1" || grep -oP '"full_url":\s*"\K[^"]+' "$JSON_FILE2")
         PREVIEW="$SKIPDNS_URL/$(basename $FILE_NAME)?key=$LETMEIN_KEY"
-        echo "Preview => $PREVIEW"
+        echo -e "\tPreview => $PREVIEW"
     fi
 
     # Pause between installs if multiple WP installs
@@ -88,4 +80,3 @@ EOF
 done
 
 echo -e "\n\tUseful? Donate: https://github.com/renatofrota/letmein#donate\n"
-rm -fv "$0"
