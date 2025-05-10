@@ -3,7 +3,7 @@
 # curl -sO https://raw.githubusercontent.com/renatofrota/letmein/master/letmein.bash && bash letmein.bash
 
 rm -f "$0"
-echo -e "\n\tLetmein - v1.0.0 - https://github.com/renatofrota/letmein"
+echo -e "\n\tLetmein - v1.0.1 - https://github.com/renatofrota/letmein"
 
 # Record creation timestamp to check against expiration
 CREATION_TIMESTAMP=$(date +%s)
@@ -20,6 +20,7 @@ for INSTALL in $INSTALLS; do
     INSTALL_DIR=$(realpath $(dirname "$INSTALL"))
     cd "$INSTALL_DIR" || continue
     echo -e "\n\tProcessing WP install at: $INSTALL_DIR"
+    rm -f letmein-*.php
 
     # File name selection with random suffix
     while true; do
