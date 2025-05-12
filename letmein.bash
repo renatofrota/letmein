@@ -35,7 +35,7 @@ if (time() > filemtime(__FILE__) + 86400) {
     die('Expired');
 }
 define('WP_USE_THEMES', false);
-if (isset(\$_REQUEST['WP_CACHE_FLUSH']) and \$_REQUEST['WP_CACHE_FLUSH'] == 1) {
+if (isset(\$_REQUEST['wp_cache_flush']) and \$_REQUEST['wp_cache_flush'] == 1) {
     @unlink(__FILE__);
     require('wp-blog-header.php');
     wp_cache_flush();
@@ -58,7 +58,7 @@ if (!is_user_logged_in()) {
     wp_safe_redirect(admin_url());
 }
 if (class_exists('Redis') or file_exists('wp-content/object-cache.php')) {
-    wp_safe_redirect(\$_SERVER['REQUEST_URI'].'?WP_CACHE_FLUSH=1');
+    wp_safe_redirect(\$_SERVER['REQUEST_URI'].'?wp_cache_flush=1');
     exit;
 }
 @unlink(__FILE__);
