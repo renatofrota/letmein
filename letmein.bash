@@ -3,7 +3,7 @@
 # curl -sO https://raw.githubusercontent.com/renatofrota/letmein/master/letmein.bash && bash letmein.bash
 
 rm -f "$0"
-echo -e "\n\tLetmein - v1.0.1 - https://github.com/renatofrota/letmein"
+echo -e "\n\tLetmein - v1.0.2 - https://github.com/renatofrota/letmein"
 
 # Record creation timestamp to check against expiration
 CREATION_TIMESTAMP=$(date +%s)
@@ -24,43 +24,56 @@ for INSTALL in $INSTALLS; do
 
     # File name selection with random suffix
     while true; do
-        FILE_NAME="letmein-$RANDOM.php"
+        FILE_NAME="letmein-$RANDOM$RANDOM$RANDOM.php"
         if [ ! -f "$FILE_NAME" ]; then
             break
         fi
     done
 
-    # Generate a new key
-    LETMEIN_KEY=$RANDOM$RANDOM$RANDOM
-
     # Generate PHP file
     cat > "$FILE_NAME" <<EOF
-<?php
-@unlink(__FILE__);
-if (time() > $CREATION_TIMESTAMP + 86400) die('Expired');
-if (\$_REQUEST['key'] != '$LETMEIN_KEY') die('Unauthoried access');
-\$_SERVER['SCRIPT_NAME'] = '/wp-login.php';
+<?php // https://github.com/renatofrota/letmein
+if (time() > filemtime(__FILE__) + 86400) {
+    @unlink(__FILE__);
+    die('Expired');
+}
 define('WP_USE_THEMES', false);
-if (!file_exists('wp-content/object-cache.php'))
-define('WP_CONTENT_DIR', __DIR__ . '/$LETMEIN_KEY');
-define('WP_PLUGIN_DIR', __DIR__ . '/$LETMEIN_KEY');
-define('WPMU_PLUGIN_DIR', __DIR__ . '/$LETMEIN_KEY');
+if (isset(\$_REQUEST['WP_CACHE_FLUSH']) and \$_REQUEST['WP_CACHE_FLUSH'] == 1) {
+    @unlink(__FILE__);
+    require('wp-blog-header.php');
+    wp_cache_flush();
+    wp_safe_redirect(admin_url());
+    exit;
+}
+define('WP_CONTENT_DIR', __DIR__ . '/letmein-ignore-content');
+define('WP_PLUGIN_DIR', __DIR__ . '/letmein-ignore-plugins');
+define('WPMU_PLUGIN_DIR', __DIR__ . '/letmein-ignore-mu-plugins');
 require('wp-blog-header.php');
 require('wp-includes/pluggable.php');
-\$admins = get_users(['role' => 'administrator', 'fields' => 'ID']);
-if (empty(\$admins)) die('No admin');
-\$user_id = array_rand(array_flip(\$admins));
-wp_clear_auth_cookie();
-wp_set_current_user(\$user_id);
-wp_set_auth_cookie(\$user_id);
+\$_SERVER['SCRIPT_NAME'] = '/wp-login.php';
+if (!is_user_logged_in()) {
+    \$admins = get_users(['role' => 'administrator', 'fields' => 'ID']);
+    if (empty(\$admins)) die('No admin');
+    \$user_id = array_rand(array_flip(\$admins));
+    wp_clear_auth_cookie();
+    wp_set_current_user(\$user_id);
+    wp_set_auth_cookie(\$user_id);
+    wp_safe_redirect(admin_url());
+}
+if (class_exists('Redis') or file_exists('wp-content/object-cache.php')) {
+    wp_safe_redirect(\$_SERVER['REQUEST_URI'].'?WP_CACHE_FLUSH=1');
+    exit;
+}
+@unlink(__FILE__);
 wp_safe_redirect(admin_url());
+exit;
 EOF
 
     # Output magic link
     SITE_URL=$(wp option get siteurl --skip-plugins --skip-themes)
     echo -e "\tMagic login link generated for $SITE_URL\n"
 
-    LIVE="$SITE_URL/$(basename $FILE_NAME)?key=$LETMEIN_KEY"
+    LIVE="$SITE_URL/$(basename $FILE_NAME)"
     echo -e "\tRegular => $LIVE"
 
     # Check for SkipDNS URL and generate preview if exists
@@ -69,7 +82,7 @@ EOF
 
     if [ -f "$JSON_FILE1" ] || [ -f "$JSON_FILE2" ]; then
         SKIPDNS_URL=$(grep -oP '"full_url":\s*"\K[^"]+' "$JSON_FILE1" || grep -oP '"full_url":\s*"\K[^"]+' "$JSON_FILE2")
-        PREVIEW="$SKIPDNS_URL/$(basename $FILE_NAME)?key=$LETMEIN_KEY"
+        PREVIEW="$SKIPDNS_URL/$(basename $FILE_NAME)"
         echo -e "\tPreview => $PREVIEW"
     fi
 
