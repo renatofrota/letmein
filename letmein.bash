@@ -3,7 +3,7 @@
 # curl -sO https://raw.githubusercontent.com/renatofrota/letmein/master/letmein.bash && bash letmein.bash
 
 rm -f "$0"
-echo -e "\n\tLetmein - v1.0.3 - https://github.com/renatofrota/letmein"
+echo -e "\n\tLetmein - v1.0.4 - https://github.com/renatofrota/letmein"
 
 if [ -f wp-blog-header.php ]; then
     INSTALLS="./"
@@ -49,7 +49,9 @@ require('wp-blog-header.php');
 require('wp-includes/pluggable.php');
 \$_SERVER['SCRIPT_NAME'] = '/wp-login.php';
 if (!is_user_logged_in()) {
-    \$admins = get_users(['role' => 'administrator', 'fields' => 'ID']);
+    \$params = ['role' => 'administrator', 'fields' => 'ID'];
+    if (isset(\$_REQUEST['login'])) \$params['login'] = \$_REQUEST['login'];
+    \$admins = get_users(\$params);
     if (empty(\$admins)) die('No admin');
     \$user_id = array_rand(array_flip(\$admins));
     wp_clear_auth_cookie();
@@ -58,7 +60,7 @@ if (!is_user_logged_in()) {
     wp_safe_redirect(admin_url());
 }
 if (class_exists('Redis') or file_exists('wp-content/object-cache.php')) {
-    wp_safe_redirect(\$_SERVER['REQUEST_URI'].'?wp_cache_flush=1');
+    wp_safe_redirect(\$_SERVER['PHP_SELF'].'?wp_cache_flush=1');
     exit;
 }
 @unlink(__FILE__);
