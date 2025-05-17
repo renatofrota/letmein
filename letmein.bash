@@ -3,7 +3,7 @@
 # curl -sO https://raw.githubusercontent.com/renatofrota/letmein/master/letmein.bash && bash letmein.bash
 
 rm -f "$0"
-echo -e "\n\tLetmein - v1.0.4 - https://github.com/renatofrota/letmein"
+echo -e "\n\tLetmein - v1.0.5 - https://github.com/renatofrota/letmein"
 
 if [ -f wp-blog-header.php ]; then
     INSTALLS="./"
@@ -74,8 +74,8 @@ EOF
     LIVE="$SITE_URL/$(basename $FILE_NAME)"
     echo -e "\tRegular => $LIVE"
 
-    JSON_FILE1=~/tmp/skipdns/$(echo "$SITE_URL" | sed 's|https://||' | sed 's|/||')
-    JSON_FILE2=/tmp/skipdns/$(echo "$SITE_URL" | sed 's|https://||' | sed 's|/||')
+    JSON_FILE1=~/tmp/skipdns/$(echo "$SITE_URL" | sed 's|https://||' | sed 's|http://||' | sed 's|/||')
+    JSON_FILE2=/tmp/skipdns/$(echo "$SITE_URL" | sed 's|https://||' | sed 's|http://||' | sed 's|/||')
 
     if [ -f "$JSON_FILE1" ] || [ -f "$JSON_FILE2" ]; then
         SKIPDNS_URL=$(grep -oP '"full_url":\s*"\K[^"]+' "$JSON_FILE1" || grep -oP '"full_url":\s*"\K[^"]+' "$JSON_FILE2")
